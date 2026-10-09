@@ -1,0 +1,2 @@
+from decoding each string to base 64 then decoding the corresponding URL to founding the flag 
+FLAG:academy{c0nv3rt1ng_fr0m_ba5e_64_e340c3ed} 
