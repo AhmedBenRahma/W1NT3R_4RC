@@ -318,4 +318,38 @@ print(bytes(a ^ ((23 + 45 * i) % 256) for i, a in enumerate(v)).decode())
 ---
  
 Common thread across today's batch: the flag format itself is almost always a free crib. Use it to recover Vigenère keys, break reused XOR/OTP keys, or spot a non-repeating keystream like the WASM one. And never trust a "resolver" or a "maze" to actually do what its name says — check what it does, not what it's called.
+
+### Stagier 1–6 (solved; answers re-derived today)
+ 
+| # | Question | Answer (flag body) | How |
+|---|----------|--------------------|-----|
+| 1 | True origin IP of the phishing mail | `203.0.113.45` | Bottom-most `Received` hop (`mx-outbound-03.hostcrate.example`). `Received-SPF` fails for this IP. Other hops are relay "furniture". |
+| 2 | C2 domain in the attachment | `cdn-neomek-hr.example` | The `.ps1` holds a base64 UTF-16LE blob. It decodes to PowerShell with `$r` = reversed base64; reversing and decoding gives the domain. |
+| 3 | Beacon User-Agent | `StagierSync/1.0` | Only HTTP request in the pcap (10.10.10.47 → 203.0.113.45). Matches the script. |
+| 4 | Persistence scheduled task | `RoboSyncUpdater` | `schtasks /create /tn "RoboSyncUpdater" ... /sc onlogon` in Sysmon, event ID 1 and 11. |
+| 5 | Failed logins before success, and IP | `47_10.10.10.47` | 47 `Failed password` entries from 10.10.10.47, then `Accepted password for admin` from the same IP. |
+| 6 | What was exfiltrated over the hidden channel | `NeoMek_GripperX9_Blueprint_Leaked` | DNS queries `NNNN.<hex>.data.cdn-neomek-hr.example` from 10.10.20.7. Chunks are duplicated and out of order: sort by sequence number, de-duplicate, hex-decode. |
+ 
+Note: a first attempt that did not order the chunks by sequence decoded to garbage. The sequence label is the first DNS label.
+ 
+### Stagier 7 (answer derived; not verified against the scoreboard)
+ 
+Evidence: `buildsrv_dump.tar` (systemd timer/service, `auth.log`, SSH public keys, `payload.enc`, `decrypt_run.sh`) and `firmware.git`.
+ 
+1. `decrypt_run.sh` documents the key: `sha256(box1|...|box6 flag bodies, pipe-joined, in solve order)`.
+```
+   sha256("203.0.113.45|cdn-neomek-hr.example|StagierSync/1.0|RoboSyncUpdater|47_10.10.10.47|NeoMek_GripperX9_Blueprint_Leaked")
+   = 03cf8dca8cdc4b8a3b911c58af5318c07415fc160d9e0306b4d1e5b91221e40f
+```
+2. `openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:<key> -in payload.enc` produced a zip with `run.sh`, `id_rsa.enc` and `severance.png`. `run.sh` was read, never executed.
+3. `severance.png` hides the passphrase in the red-channel LSBs: `r3b00t_th3_gr1pp3r`.
+4. `id_rsa.enc` is an OpenSSH ed25519 key (aes256-ctr, bcrypt KDF, 24 rounds). The `bcrypt` Python package was not installable, so bcrypt_pbkdf was implemented in pure Python (Blowfish checked against the standard test vector). The decrypted check bytes matched, so the passphrase is right. Key comment: `backup-sync@cdn-neomek-hr.example`; the derived public key matches the stored one.
+5. Attribution by fingerprint:
+   - `auth.log` accepted `buildbot` from `203.0.113.45` with `SHA256:ynO/+Pn2SHn769YKUE/6mX3ckCRHrf+hjQiuUYlFbxQ`.
+   - That is the `backup-sync@cdn-neomek-hr.example` key in `buildbot`'s `authorized_keys`, on the attacker's own C2 domain and the same IP as the phishing mail.
+   - Yassine's key is `SHA256:knqbUoyXE578DiCShLKIBGd9mp3sCyKgJmpkhWcJkuM` and does not appear in the login.
+6. Decoy: an unreferenced commit (`a8e4bec`) holds `SecurinetsEnit{ghost_1n_th3_r3p0_n0t_th3_1nt3rn}`.
+Candidate flag: `SecurinetsEnit{SHA256:ynO/+Pn2SHn769YKUE/6mX3ckCRHrf+hjQiuUYlFbxQ}`.
+If rejected, try without the `SHA256:` prefix.
+ 
  
