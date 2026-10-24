@@ -6,8 +6,8 @@
 ![arch](https://img.shields.io/badge/ELF-x86__64-lightgrey)
 ![status](https://img.shields.io/badge/status-solved-brightgreen)
  
-**Winter AR series**
- 
+ <img width="622" height="746" alt="image" src="https://github.com/user-attachments/assets/f8b5f1b8-1801-4ef1-8d22-a27e0deddb71" />
+
 </div>
 > *A mystery binary that gives almost random output for any input. All we know: it wants a 4-digit PIN.*
  
