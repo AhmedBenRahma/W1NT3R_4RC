@@ -78,3 +78,5 @@ def main(path):
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else "files/transmission.wav")
+
+#Y4G4M1 Copyrights
