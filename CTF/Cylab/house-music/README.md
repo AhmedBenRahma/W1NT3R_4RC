@@ -1,5 +1,5 @@
 # house-music — Audio Steganography / Forensics (100 pts)
-
+# Y4G4M1 
 > *tried making some house music, but the foundation was kinda off. lesson learned: CRUX first.*
 >
 > Download the attached `transmission.wav`.
@@ -116,20 +116,4 @@ cruXipher{spectro_phase_mason}
 
 Requires `numpy` only. The figures in this writeup were drawn with `matplotlib`.
 
-## Takeaways
-
-- When the stereo mix looks like noise, always look at **L − R** (or invert one channel and sum) before going deeper into LSB.
-- Spectrogram art can be drawn in any shape. Here the "font" is a cipher alphabet, so read the symbols as ciphertext.
-- Challenge hints are literal: "foundation" is the pigpen grid, and "CRUX first" is the keyword at the start of the alphabet.
-- Two cheap things to try on any steg challenge early: a spectrogram, and a channel difference.
-
-## Files
-
-```
-README.md
-solve.py
-files/transmission.wav
-images/01_spectrograms.png
-images/02_glyphs.png
-images/03_keyed_pigpen.png
-```
+#Y4G4M1 Copyrights
