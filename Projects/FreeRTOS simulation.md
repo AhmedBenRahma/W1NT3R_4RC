@@ -44,9 +44,84 @@ Rate Monotonic (RM) scheduling is achievable on a real implementation.
 Releases are exactly periodic: A every 50 ticks and B every 30 ticks, no drift.
 
 ![Final log, A preempted by B]<img width="920" height="150" alt="image" src="https://github.com/user-attachments/assets/7158acbc-d893-43cc-8502-0e3aa0a7d3b8" />
+Main.C
 
 
+## 💻 Code (`main/main.c`)
 
+<details>
+<summary>Click to expand main.c</summary>
+
+```c
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_timer.h"
+#include "main.h"
+
+static uint32_t iters_per_ms;
+
+static void spin_iteration(uint32_t n)
+{
+    for (uint32_t i = 0; i < n; i++)
+        __asm__ __volatile__("NOP");
+}
+
+static void calibrate(void)
+{
+    const uint32_t N = 20000000;
+    int64_t t0 = esp_timer_get_time();
+    spin_iteration(N);
+    int64_t us = esp_timer_get_time() - t0;
+    iters_per_ms = (uint32_t)((int64_t)N * 1000 / us);
+}
+
+void busyWork(uint32_t worker_ms)
+{
+    spin_iteration(iters_per_ms * worker_ms);   /* fixed CPU work */
+}
+
+static const task_params_t taskA = {.name = "A", .period = 500, .worker = 190};
+static const task_params_t taskB = {.name = "B", .period = 300, .worker = 90};
+
+void periodic_task(void *pvParameters)
+{
+    const task_params_t *p = (const task_params_t *)pvParameters;
+    const TickType_t period_ticks = pdMS_TO_TICKS(p->period);
+    TickType_t last_wake = xTaskGetTickCount();
+
+    for (uint32_t job = 0;; job++)
+    {
+        TickType_t start_tick = xTaskGetTickCount();
+        int64_t t0 = esp_timer_get_time();
+        busyWork(p->worker);
+        int64_t dt_us = esp_timer_get_time() - t0;      /* measured before printf */
+        TickType_t end_tick = xTaskGetTickCount();
+
+        printf("%s job %lu: start=%lu end=%lu measured=%lld us\n",
+               p->name, (unsigned long)job,
+               (unsigned long)start_tick, (unsigned long)end_tick, (long long)dt_us);
+
+        vTaskDelayUntil(&last_wake, period_ticks);
+    }
+}
+
+void app_main(void)
+{
+    calibrate();
+    printf("tick rate=%d Hz, tick=%d ms\n", (int)configTICK_RATE_HZ, (int)(1000 / configTICK_RATE_HZ));
+    printf("ticks: 500ms=%lu 300ms=%lu 190ms=%lu 90ms=%lu\n",
+           (unsigned long)pdMS_TO_TICKS(500), (unsigned long)pdMS_TO_TICKS(300),
+           (unsigned long)pdMS_TO_TICKS(190), (unsigned long)pdMS_TO_TICKS(90));
+
+    xTaskCreatePinnedToCore(periodic_task, "Task A", 4096, (void *)&taskA, TASK_PRIO_2, NULL, 0);
+    xTaskCreatePinnedToCore(periodic_task, "Task B", 4096, (void *)&taskB, TASK_PRIO_3, NULL, 0);
+}
+```
+
+</details>
+
+`main.h` defines `task_params_t` (name, period, worker) and the priority macros `TASK_PRIO_2` and `TASK_PRIO_3`.
 
 ## 🧠 Takeaways
 - RM is achievable in theory and observed here, but the implementation only **approximates** it: tick quantization (10 ms), context switch and `printf` overhead, and QEMU timing is not hardware timing.
