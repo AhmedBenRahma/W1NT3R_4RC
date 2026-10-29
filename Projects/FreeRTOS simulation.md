@@ -46,15 +46,7 @@ Releases are exactly periodic: A every 50 ticks and B every 30 ticks, no drift.
 ![Final log, A preempted by B]<img width="920" height="150" alt="image" src="https://github.com/user-attachments/assets/7158acbc-d893-43cc-8502-0e3aa0a7d3b8" />
 
 
-## 🐛 Bugs and lessons
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| Build failed with `Unterminated quoted string` | Apostrophe in the folder path (`l'Enseignement`) broke a shell command in the bootloader size check | Moved the project to `~/` inside WSL |
-| A and B ran at the same time | QEMU `esp32` is dual-core, so FreeRTOS ran one task per core and nothing was preempted | `xTaskCreatePinnedToCore(..., 0)` |
-| A measured too short | The first `busyWork()` used a wall-clock timer, so preemption ate its time | Calibrated NOP loop |
-| My edits seemed ignored | I was building a stale copy of the project | Checked with `grep` and the ELF SHA in the boot log |
 
-![Before pinning: jobs overlap]
 
 ## 🧠 Takeaways
 - RM is achievable in theory and observed here, but the implementation only **approximates** it: tick quantization (10 ms), context switch and `printf` overhead, and QEMU timing is not hardware timing.
