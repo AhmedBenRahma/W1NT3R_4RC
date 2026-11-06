@@ -35,6 +35,7 @@ Two robots compete at the same time. The first to serve the correct table **and*
 | 6 | **Report** | On a button press, prints the whole trajectory over serial, one `timestamp, x, y` per line |
 
 ## Hardware
+<img width="153" height="204" alt="image" src="https://github.com/user-attachments/assets/54035781-1f6e-49d7-af3f-57887492f712" />
 
 | Component | Role |
 |---|---|
