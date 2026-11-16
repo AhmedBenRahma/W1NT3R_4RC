@@ -104,7 +104,7 @@ Cette étape indique au système où trouver `libpbc` après l'installation.
 Le programme se lance et attend des commandes : PBC est opérationnel.
  
 ![PBC en marche](<img width="486" height="55" alt="image" src="https://github.com/user-attachments/assets/a8af2633-9149-4d9b-93bc-39cd07a3e291" />
-)
+
  
 ---
  
@@ -120,7 +120,7 @@ cd ~/pbc-0.5.14
 Chaque ligne affichant `1` correspond à un test de bilinéarité réussi (1 = vrai).
  
 ![Résultat de pairing_test.pbc](<img width="622" height="275" alt="image" src="https://github.com/user-attachments/assets/6fe3fc8a-effe-4435-a3ba-95cabbaeef8e" />
-)
+
  
 ### 5.2 Vérification manuelle
  
