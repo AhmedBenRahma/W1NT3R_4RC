@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+prime_pb2.py
+prime_pb2_grpc.py
+target/
+build/
+.idea/
+.vscode/
+*.class

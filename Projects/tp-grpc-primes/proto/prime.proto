@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+message GetNumber{
+    int64 n = 1;
+}
+
+message output{
+    bool b = 1;
+    repeated int64 fact = 2;
+    
+}
+
+message NPremiers {
+  repeated int64 range = 1;
+}
+
+message NPremiersStream {
+  int64 range = 1;
+}
+
+service FirstPrimeService {   
+    rpc FirstPrime(GetNumber) returns(NPremiers);
+}
+
+service FirstPrimeStreamService {   
+    rpc FirstPrimeStream(GetNumber) returns(stream NPremiersStream);
+}
+
+service IsPrimeService {   
+    rpc IsPrime(GetNumber) returns(output);
+}
